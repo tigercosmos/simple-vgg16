@@ -3,13 +3,13 @@
 #include "Layer.hpp"
 #include "Util.hpp"
 #include <vector>
-namespace sd
+namespace sv
 {
     template <typename dtype>
     class Network
     {
     private:
-        std::vector<sd::Layer<dtype> *> layers;
+        std::vector<sv::Layer<dtype> *> layers;
 
     public:
         Network()
@@ -18,7 +18,7 @@ namespace sd
         };
         ~Network() = default;
 
-        void addLayer(sd::Layer<dtype> *layer)
+        void addLayer(sv::Layer<dtype> *layer)
         {
             this->layers.push_back(layer);
         }
@@ -45,4 +45,4 @@ namespace sd
             }
         }
     };
-} // namespace sd
+} // namespace sv

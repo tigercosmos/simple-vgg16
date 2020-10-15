@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
-namespace sd
+namespace sv
 {
     template <typename dtype>
     class Layer
@@ -17,7 +17,7 @@ namespace sd
         virtual ~Layer(){};
         virtual void print() const = 0;
         virtual std::string getName() const = 0;
-        virtual void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const = 0;
+        virtual void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const = 0;
     };
 
     template <typename dtype>
@@ -25,16 +25,16 @@ namespace sd
     {
     private:
         std::string name = "BasicLayer";
-        sd::Tensor<dtype> weight;
-        sd::Tensor<dtype> bias;
+        sv::Tensor<dtype> weight;
+        sv::Tensor<dtype> bias;
 
     public:
         BasicLayer(int width, int height, int channel)
         {
             STATIC_ASSERT_FLOAT_TYPE(dtype);
-            weight = sd::Tensor<dtype>(width, height, channel);
+            weight = sv::Tensor<dtype>(width, height, channel);
             weight.randam();
-            bias = sd::Tensor<dtype>(width, height);
+            bias = sv::Tensor<dtype>(width, height);
             bias.randam();
         }
 
@@ -50,7 +50,7 @@ namespace sd
             std::cout << this->bias << std::endl;
         }
         std::string getName() const override { return name; };
-        void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const override{};
+        void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const override{};
     };
 
     template <typename dtype>
@@ -60,17 +60,17 @@ namespace sd
         std::string name = "Conv";
         int kernelSize;
         int channelSize;
-        sd::Tensor<dtype> kernels;
-        sd::Tensor<dtype> bias;
+        sv::Tensor<dtype> kernels;
+        sv::Tensor<dtype> bias;
 
     public:
         ConvLayer(int kernelSize, int channelSize)
             : kernelSize{kernelSize}, channelSize{channelSize}
         {
             STATIC_ASSERT_FLOAT_TYPE(dtype);
-            kernels = sd::Tensor<dtype>(kernelSize, kernelSize, channelSize);
+            kernels = sv::Tensor<dtype>(kernelSize, kernelSize, channelSize);
             kernels.randam();
-            bias = sd::Tensor<dtype>(channelSize);
+            bias = sv::Tensor<dtype>(channelSize);
             bias.randam();
         }
         ~ConvLayer() = default;
@@ -87,12 +87,12 @@ namespace sd
 
         std::string getName() const override { return name; };
 
-        void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const override
+        void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const override
         {
             auto inputShape = input.shape();
             int x = inputShape[0], y = inputShape[1], z = inputShape[2];
 
-            sd::Tensor<dtype> newTensor(x + 2, y + 2, z);
+            sv::Tensor<dtype> newTensor(x + 2, y + 2, z);
             auto newShape = newTensor.shape();
             int width = newShape[0], height = newShape[1];
 
@@ -103,14 +103,14 @@ namespace sd
                     for (int j = 0; j < x; j++)
                     {
 
-                        int newId = sd::to1D(i, k + 1, j + 1, width, height);
-                        int oldId = sd::to1D(i, k, j, x, y);
+                        int newId = sv::to1D(i, k + 1, j + 1, width, height);
+                        int oldId = sv::to1D(i, k, j, x, y);
                         newTensor[newId] = input[oldId];
                     }
                 }
             }
 
-            sd::conv2d<dtype>(newTensor, out, this->kernels, this->bias);
+            sv::conv2d<dtype>(newTensor, out, this->kernels, this->bias);
         }
     };
 
@@ -137,9 +137,9 @@ namespace sd
 
         std::string getName() const override { return name; };
 
-        void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const override
+        void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const override
         {
-            return sd::maxpool<dtype>(input, out, poolSize, stride);
+            return sv::maxpool<dtype>(input, out, poolSize, stride);
         }
     };
 
@@ -148,8 +148,8 @@ namespace sd
     {
     private:
         std::string name = "FC";
-        sd::Tensor<dtype> weight;
-        sd::Tensor<dtype> bias;
+        sv::Tensor<dtype> weight;
+        sv::Tensor<dtype> bias;
         int inputSize;
         int outputSize;
 
@@ -158,9 +158,9 @@ namespace sd
             : inputSize{inputSize}, outputSize{outputSize}
         {
             STATIC_ASSERT_FLOAT_TYPE(dtype);
-            weight = sd::Tensor<dtype>(inputSize, outputSize);
+            weight = sv::Tensor<dtype>(inputSize, outputSize);
             weight.randam();
-            bias = sd::Tensor<dtype>(outputSize);
+            bias = sv::Tensor<dtype>(outputSize);
             bias.randam();
         }
         ~FCLayer() = default;
@@ -177,9 +177,9 @@ namespace sd
 
         std::string getName() const override { return name; };
 
-        void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const override
+        void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const override
         {
-            return sd::fc<dtype>(input, out, weight, bias);
+            return sv::fc<dtype>(input, out, weight, bias);
         }
     };
-} // namespace sd
+} // namespace sv

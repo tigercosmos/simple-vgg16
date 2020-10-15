@@ -6,22 +6,22 @@
 
 void testSimpleNet()
 {
-    sd::Tensor<double> output;
+    sv::Tensor<double> output;
 
     std::cout << "Test Simple Net" << std::endl;
 
-    auto t1 = sd::Tensor<double>(6, 6, 3); // 6 x 6 x 3
+    auto t1 = sv::Tensor<double>(6, 6, 3); // 6 x 6 x 3
     t1.randam();
 
-    auto network = sd::Network<double>();
+    auto network = sv::Network<double>();
 
-    auto *layer2 = new sd::ConvLayer<double>(3, 6); // 6 x 6 x 6
+    auto *layer2 = new sv::ConvLayer<double>(3, 6); // 6 x 6 x 6
     network.addLayer(layer2);
 
-    auto *layer3 = new sd::MaxPoolLayer<double>(2, 2); // 3 x 3 x 3
+    auto *layer3 = new sv::MaxPoolLayer<double>(2, 2); // 3 x 3 x 3
     network.addLayer(layer3);
 
-    auto *layer4 = new sd::FCLayer<double>(27, 6); // 1 x 1 x 6
+    auto *layer4 = new sv::FCLayer<double>(27, 6); // 1 x 1 x 6
     network.addLayer(layer4);
 
     network.printLayers();
@@ -33,10 +33,10 @@ void testSimpleNet()
 
 void testMaxPool()
 {
-    sd::Tensor<double> output;
+    sv::Tensor<double> output;
 
     std::cout << "Test MaxPool" << std::endl;
-    auto t1 = sd::Tensor<double>(4, 4, 1);
+    auto t1 = sv::Tensor<double>(4, 4, 1);
     std::cout << "origin input" << std::endl;
     for (int i = 0; i < t1.data().size(); i++)
     {
@@ -44,7 +44,7 @@ void testMaxPool()
     }
     std::cout << t1 << std::endl;
 
-    auto *layer = new sd::MaxPoolLayer<double>(2, 2);
+    auto *layer = new sv::MaxPoolLayer<double>(2, 2);
     layer->print();
     layer->forward(t1, output);
 
@@ -54,10 +54,10 @@ void testMaxPool()
 
 void testFC()
 {
-    sd::Tensor<double> output;
+    sv::Tensor<double> output;
 
     std::cout << "Test ConvPool" << std::endl;
-    auto t1 = sd::Tensor<double>(10, 10, 1);
+    auto t1 = sv::Tensor<double>(10, 10, 1);
     std::cout << "origin input" << std::endl;
     for (int i = 3; i < 6; i++)
     {
@@ -68,7 +68,7 @@ void testFC()
     }
     std::cout << t1 << std::endl;
 
-    auto *layer = new sd::FCLayer<double>(10 * 10 * 1, 7);
+    auto *layer = new sv::FCLayer<double>(10 * 10 * 1, 7);
     // layer->print();
     layer->forward(t1, output);
 
@@ -78,10 +78,10 @@ void testFC()
 
 void testConv()
 {
-    sd::Tensor<double> output;
+    sv::Tensor<double> output;
 
     std::cout << "Test FC" << std::endl;
-    auto t1 = sd::Tensor<double>(4, 4, 1);
+    auto t1 = sv::Tensor<double>(4, 4, 1);
     std::cout << "origin input" << std::endl;
     for (int i = 0; i < t1.data().size(); i++)
     {
@@ -89,7 +89,7 @@ void testConv()
     }
     std::cout << t1 << std::endl;
 
-    auto *layer = new sd::MaxPoolLayer<double>(2, 2);
+    auto *layer = new sv::MaxPoolLayer<double>(2, 2);
     layer->print();
     layer->forward(t1, output);
 

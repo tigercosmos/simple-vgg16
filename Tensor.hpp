@@ -3,7 +3,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace sd
+namespace sv
 {
 
     template <typename dtype>
@@ -169,4 +169,4 @@ namespace sd
             }
         }
     };
-} // namespace sd
+} // namespace sv

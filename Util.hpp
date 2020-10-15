@@ -8,10 +8,10 @@
 template <typename T>
 constexpr bool is_floating_point = std::is_floating_point<T>::value;
 
-namespace sd
+namespace sv
 {
     int to1D(int z, int y, int x, int width, int height)
     {
         return (width * height * z) + (width * y) + x;
     }
-} // namespace sd
+} // namespace sv

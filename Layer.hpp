@@ -1,0 +1,185 @@
+#pragma once
+#include "Util.hpp"
+#include "Tensor.hpp"
+#include "Operand.hpp"
+#include <cstdlib>
+#include <iostream>
+#include <string>
+namespace sd
+{
+    template <typename dtype>
+    class Layer
+    {
+    private:
+        std::string name;
+
+    public:
+        virtual ~Layer(){};
+        virtual void print() const = 0;
+        virtual std::string getName() const = 0;
+        virtual void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const = 0;
+    };
+
+    template <typename dtype>
+    class BasicLayer : public Layer<dtype>
+    {
+    private:
+        std::string name = "BasicLayer";
+        sd::Tensor<dtype> weight;
+        sd::Tensor<dtype> bias;
+
+    public:
+        BasicLayer(int width, int height, int channel)
+        {
+            STATIC_ASSERT_FLOAT_TYPE(dtype);
+            weight = sd::Tensor<dtype>(width, height, channel);
+            weight.randam();
+            bias = sd::Tensor<dtype>(width, height);
+            bias.randam();
+        }
+
+        ~BasicLayer() = default;
+
+        void print() const override
+        {
+            std::cout << "*Weight*" << std::endl;
+            std::cout << "shape:" << this->weight.shapeStr() << std::endl;
+            std::cout << this->weight << std::endl;
+            std::cout << "*Bias*" << std::endl;
+            std::cout << "shape:" << this->bias.shapeStr() << std::endl;
+            std::cout << this->bias << std::endl;
+        }
+        std::string getName() const override { return name; };
+        void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const override{};
+    };
+
+    template <typename dtype>
+    class ConvLayer : public Layer<dtype>
+    {
+    private:
+        std::string name = "Conv";
+        int kernelSize;
+        int channelSize;
+        sd::Tensor<dtype> kernels;
+        sd::Tensor<dtype> bias;
+
+    public:
+        ConvLayer(int kernelSize, int channelSize)
+            : kernelSize{kernelSize}, channelSize{channelSize}
+        {
+            STATIC_ASSERT_FLOAT_TYPE(dtype);
+            kernels = sd::Tensor<dtype>(kernelSize, kernelSize, channelSize);
+            kernels.randam();
+            bias = sd::Tensor<dtype>(channelSize);
+            bias.randam();
+        }
+        ~ConvLayer() = default;
+
+        void print() const override
+        {
+            std::cout << "*kernels*" << std::endl;
+            std::cout << "shape:" << this->kernels.shapeStr() << std::endl;
+            std::cout << this->kernels << std::endl;
+            std::cout << "*Bias*" << std::endl;
+            std::cout << "shape:" << this->bias.shapeStr() << std::endl;
+            std::cout << this->bias << std::endl;
+        }
+
+        std::string getName() const override { return name; };
+
+        void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const override
+        {
+            auto inputShape = input.shape();
+            int x = inputShape[0], y = inputShape[1], z = inputShape[2];
+
+            sd::Tensor<dtype> newTensor(x + 2, y + 2, z);
+            auto newShape = newTensor.shape();
+            int width = newShape[0], height = newShape[1];
+
+            for (int i = 0; i < z; i++)
+            {
+                for (int k = 0; k < y; k++)
+                {
+                    for (int j = 0; j < x; j++)
+                    {
+
+                        int newId = sd::to1D(i, k + 1, j + 1, width, height);
+                        int oldId = sd::to1D(i, k, j, x, y);
+                        newTensor[newId] = input[oldId];
+                    }
+                }
+            }
+
+            sd::conv2d<dtype>(newTensor, out, this->kernels, this->bias);
+        }
+    };
+
+    template <typename dtype>
+    class MaxPoolLayer : public Layer<dtype>
+    {
+    private:
+        std::string name = "MaxPool";
+        int poolSize;
+        int stride;
+
+    public:
+        MaxPoolLayer(int poolSize, int stride)
+            : poolSize{poolSize}, stride{stride}
+        {
+            STATIC_ASSERT_FLOAT_TYPE(dtype);
+        }
+        ~MaxPoolLayer() = default;
+
+        void print() const override
+        {
+            std::cout << "poolSize: " << poolSize << std::endl;
+        }
+
+        std::string getName() const override { return name; };
+
+        void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const override
+        {
+            return sd::maxpool<dtype>(input, out, poolSize, stride);
+        }
+    };
+
+    template <typename dtype>
+    class FCLayer : public Layer<dtype>
+    {
+    private:
+        std::string name = "FC";
+        sd::Tensor<dtype> weight;
+        sd::Tensor<dtype> bias;
+        int inputSize;
+        int outputSize;
+
+    public:
+        FCLayer(int inputSize, int outputSize)
+            : inputSize{inputSize}, outputSize{outputSize}
+        {
+            STATIC_ASSERT_FLOAT_TYPE(dtype);
+            weight = sd::Tensor<dtype>(inputSize, outputSize);
+            weight.randam();
+            bias = sd::Tensor<dtype>(outputSize);
+            bias.randam();
+        }
+        ~FCLayer() = default;
+
+        void print() const override
+        {
+            std::cout << "*weight*" << std::endl;
+            std::cout << "shape:" << this->weight.shapeStr() << std::endl;
+            std::cout << this->weight << std::endl;
+            std::cout << "*Bias*" << std::endl;
+            std::cout << "shape:" << this->bias.shapeStr() << std::endl;
+            std::cout << this->bias << std::endl;
+        }
+
+        std::string getName() const override { return name; };
+
+        void forward(sd::Tensor<dtype> &input, sd::Tensor<dtype> &out) const override
+        {
+            return sd::fc<dtype>(input, out, weight, bias);
+        }
+    };
+} // namespace sd

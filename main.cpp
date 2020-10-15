@@ -4,9 +4,18 @@
 #include "Layer.hpp"
 #include "Network.hpp"
 
+#ifdef BENCHMARK
+long long int MEM, PARAM, MAC, MEMALL = 0, PARAMALL = 0, MACALL = 0;
+#endif
+
 int main()
 {
     std::cout << "The VGG16 Net" << std::endl;
+#ifdef BENCHMARK
+    std::cout << "-----------------------------" << std::endl;
+    std::cout << "NAME:\tMEM\tPARAM\tMAC" << std::endl;
+    std::cout << "-----------------------------" << std::endl;
+#endif
 
     // prepare the input data
     auto input = sv::Tensor<double>(224, 224, 3); // 224 x 224 x 3
@@ -61,6 +70,12 @@ int main()
     // predict the result by forwarding
     sv::Tensor<double> output;
     network.predict(input, output);
+
+#ifdef BENCHMARK
+    std::cout << "Total:\t" << MEMALL / 1000000 << "Mb,\t"
+              << PARAMALL / 1000000 << "Mb,\t" << MACALL / 1000000 << "Mb" << std::endl;
+    std::cout << "-----------------------------" << std::endl;
+#endif
 
     // show the result
     std::cout << "@@ result @@" << std::endl;

@@ -6,6 +6,7 @@ This is a simple implementation of the VGG16 net from scratch written in C++.
 
 ```
 $ make clean; make; ./vgg16
+$ make clean; make BENCHMARK=1; ./vgg16
 ```
 
 ## Unit Test

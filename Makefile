@@ -5,6 +5,10 @@ APP_NAME=vgg16
 TEST_NAME=vgg16_test
 OBJDIR=objs
 
+ifeq ($(BENCHMARK),1)
+	CXXFLAGS += -DBENCHMARK
+endif
+
 default: $(APP_NAME)
 
 .PHONY: dirs clean

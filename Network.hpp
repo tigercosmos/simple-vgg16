@@ -22,6 +22,7 @@ namespace sv
         {
             this->layers.push_back(layer);
         }
+
         void printLayers()
         {
             std::cout << "=== Network ===" << std::endl;

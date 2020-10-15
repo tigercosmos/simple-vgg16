@@ -1,12 +1,23 @@
 #pragma once
 #include <cassert>
 #include "Activation.hpp"
+
+#ifdef BENCHMARK
+extern long long int MEM, PARAM, MAC;
+#endif
+
 namespace sv
 {
     template <typename dtype>
     void conv2d(sv::Tensor<dtype> &input, sv::Tensor<dtype> &output,
                 sv::Tensor<dtype> const &kernels, sv::Tensor<dtype> const &bias)
     {
+#ifdef BENCHMARK
+        MEM = 0;
+        PARAM = 0;
+        MAC = 0;
+#endif
+
         auto inputShape = input.shape();
         auto kernelsShape = kernels.shape();
 
@@ -46,11 +57,23 @@ namespace sv
                 }
             }
         }
+
+#ifdef BENCHMARK
+        MAC = N * F * E * R * S * C;
+        PARAM = kernels.data().size() + bias.data().size();
+        MEM = output.data().size() * sizeof(dtype);
+#endif
     }
 
     template <typename dtype>
     void maxpool(sv::Tensor<dtype> &input, sv::Tensor<dtype> &output, int const &poolSize, int const &stride)
     {
+
+#ifdef BENCHMARK
+        MEM = 0;
+        PARAM = 0;
+        MAC = 0;
+#endif
         auto inputShape = input.shape();
         assert(inputShape.size() == 3);
 
@@ -86,13 +109,26 @@ namespace sv
         }
 
         output = out;
+
+#ifdef BENCHMARK
+        MAC = 0;
+        PARAM = 0;
+        MEM = output.data().size() * sizeof(dtype);
+#endif
     }
 
     template <typename dtype>
     void fc(sv::Tensor<dtype> &input, sv::Tensor<dtype> &output,
             sv::Tensor<dtype> const &weight, sv::Tensor<dtype> const &bias)
     {
+#ifdef BENCHMARK
+        MEM = 0;
+        PARAM = 0;
+        MAC = 0;
+#endif
+
         auto inputShape = input.shape();
+        auto inputLength = input.data().size();
         auto weightShape = weight.shape();
 
         int outputSize = weightShape[1];
@@ -103,11 +139,19 @@ namespace sv
             output[i] = bias[i];
 
             // input data stores as flattened, so no need to flatten
-            for (int k = 0; k < input.data().size(); k++)
+            for (int k = 0; k < inputLength; k++)
             {
                 output[i] += input[k] * weight[i + outputSize * k];
             }
         }
+
+#ifdef BENCHMARK
+        auto weightLength = weight.data().size();
+
+        MAC = inputLength * outputSize;
+        PARAM = weightLength + outputSize;
+        MEM = output.data().size() * sizeof(dtype);
+#endif
     }
 
 } // namespace sv

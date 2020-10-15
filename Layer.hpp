@@ -5,6 +5,11 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+
+#ifdef BENCHMARK
+extern long long int  MEM, PARAM, MAC, MEMALL, PARAMALL, MACALL;
+#endif
+
 namespace sv
 {
     template <typename dtype>
@@ -15,7 +20,12 @@ namespace sv
 
     public:
         virtual ~Layer(){};
+
         virtual void print() const = 0;
+#ifdef BENCHMARK
+        virtual void printBenchmark() const = 0;
+#endif
+
         virtual std::string getName() const = 0;
         virtual void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const = 0;
     };
@@ -49,7 +59,15 @@ namespace sv
             std::cout << "shape:" << this->bias.shapeStr() << std::endl;
             std::cout << this->bias << std::endl;
         }
-        std::string getName() const override { return name; };
+
+#ifdef BENCHMARK
+        virtual void printBenchmark() const override{};
+#endif
+
+        std::string getName() const override
+        {
+            return name;
+        };
         void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const override{};
     };
 
@@ -85,7 +103,20 @@ namespace sv
             std::cout << this->bias << std::endl;
         }
 
-        std::string getName() const override { return name; };
+#ifdef BENCHMARK
+        virtual void printBenchmark() const override
+        {
+            std::cout << name << ":\t" << MEM << ",\t" << PARAM << ",\t" << MAC << std::endl;
+            MEMALL += MEM;
+            PARAMALL += PARAM;
+            MACALL += MAC;
+        };
+#endif
+
+        std::string getName() const override
+        {
+            return name;
+        };
 
         void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const override
         {
@@ -111,6 +142,9 @@ namespace sv
             }
 
             sv::conv2d<dtype>(newTensor, out, this->kernels, this->bias);
+#ifdef BENCHMARK
+            printBenchmark();
+#endif
         }
     };
 
@@ -135,11 +169,27 @@ namespace sv
             std::cout << "poolSize: " << poolSize << std::endl;
         }
 
-        std::string getName() const override { return name; };
+#ifdef BENCHMARK
+        virtual void printBenchmark() const override
+        {
+            std::cout << name << ":\t" << MEM << ",\t" << PARAM << ",\t" << MAC << std::endl;
+            MEMALL += MEM;
+            PARAMALL += PARAM;
+            MACALL += MAC;
+        };
+#endif
+
+        std::string getName() const override
+        {
+            return name;
+        };
 
         void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const override
         {
-            return sv::maxpool<dtype>(input, out, poolSize, stride);
+            sv::maxpool<dtype>(input, out, poolSize, stride);
+#ifdef BENCHMARK
+            printBenchmark();
+#endif
         }
     };
 
@@ -175,11 +225,27 @@ namespace sv
             std::cout << this->bias << std::endl;
         }
 
-        std::string getName() const override { return name; };
+#ifdef BENCHMARK
+        virtual void printBenchmark() const override
+        {
+            std::cout << name << ":\t" << MEM << ",\t" << PARAM << ",\t" << MAC << std::endl;
+            MEMALL += MEM;
+            PARAMALL += PARAM;
+            MACALL += MAC;
+        };
+#endif
+
+        std::string getName() const override
+        {
+            return name;
+        };
 
         void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const override
         {
-            return sv::fc<dtype>(input, out, weight, bias);
+            sv::fc<dtype>(input, out, weight, bias);
+#ifdef BENCHMARK
+            printBenchmark();
+#endif
         }
     };
 } // namespace sv

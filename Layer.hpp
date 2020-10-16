@@ -7,7 +7,7 @@
 #include <string>
 
 #ifdef BENCHMARK
-extern long long int  MEM, PARAM, MAC, MEMALL, PARAMALL, MACALL;
+extern long long int MEM, PARAM, MAC, MEMALL, PARAMALL, MACALL;
 #endif
 
 namespace sv
@@ -37,15 +37,16 @@ namespace sv
         std::string name = "Conv";
         int kernelSize;
         int channelSize;
-        sv::Tensor<dtype> kernels;
+        sv::Tensor<dtype> fmapSize;
+        sv::Tensor<dtype> weight;
         sv::Tensor<dtype> bias;
 
     public:
-        ConvLayer(int kernelSize, int channelSize)
-            : kernelSize{kernelSize}, channelSize{channelSize}
+        ConvLayer(int fmapSize, int kernelSize, int channelSize)
+            : fmapSize{fmapSize}, kernelSize{kernelSize}, channelSize{channelSize}
         {
             STATIC_ASSERT_FLOAT_TYPE(dtype);
-            kernels = sv::Tensor<dtype>(kernelSize, kernelSize, channelSize);
+            kernels = sv::Tensor<dtype>(fmapSize, kernelSize, kernelSize, channelSize);
             kernels.randam();
             bias = sv::Tensor<dtype>(channelSize);
             bias.randam();
@@ -54,9 +55,9 @@ namespace sv
 
         void print() const override
         {
-            std::cout << "*kernels*" << std::endl;
-            std::cout << "shape:" << this->kernels.shapeStr() << std::endl;
-            std::cout << this->kernels << std::endl;
+            std::cout << "*weight*" << std::endl;
+            std::cout << "shape:" << this->weight.shapeStr() << std::endl;
+            std::cout << this->weight << std::endl;
             std::cout << "*Bias*" << std::endl;
             std::cout << "shape:" << this->bias.shapeStr() << std::endl;
             std::cout << this->bias << std::endl;
@@ -100,7 +101,7 @@ namespace sv
                 }
             }
 
-            sv::conv2d<dtype>(newTensor, out, this->kernels, this->bias);
+            sv::conv2d<dtype>(newTensor, out, weight, bias);
 #ifdef BENCHMARK
             printBenchmark();
 #endif

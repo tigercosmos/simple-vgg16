@@ -31,47 +31,6 @@ namespace sv
     };
 
     template <typename dtype>
-    class BasicLayer : public Layer<dtype>
-    {
-    private:
-        std::string name = "BasicLayer";
-        sv::Tensor<dtype> weight;
-        sv::Tensor<dtype> bias;
-
-    public:
-        BasicLayer(int width, int height, int channel)
-        {
-            STATIC_ASSERT_FLOAT_TYPE(dtype);
-            weight = sv::Tensor<dtype>(width, height, channel);
-            weight.randam();
-            bias = sv::Tensor<dtype>(width, height);
-            bias.randam();
-        }
-
-        ~BasicLayer() = default;
-
-        void print() const override
-        {
-            std::cout << "*Weight*" << std::endl;
-            std::cout << "shape:" << this->weight.shapeStr() << std::endl;
-            std::cout << this->weight << std::endl;
-            std::cout << "*Bias*" << std::endl;
-            std::cout << "shape:" << this->bias.shapeStr() << std::endl;
-            std::cout << this->bias << std::endl;
-        }
-
-#ifdef BENCHMARK
-        virtual void printBenchmark() const override{};
-#endif
-
-        std::string getName() const override
-        {
-            return name;
-        };
-        void forward(sv::Tensor<dtype> &input, sv::Tensor<dtype> &out) const override{};
-    };
-
-    template <typename dtype>
     class ConvLayer : public Layer<dtype>
     {
     private:

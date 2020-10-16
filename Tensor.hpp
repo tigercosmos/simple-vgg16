@@ -37,6 +37,14 @@ namespace sv
             this->mShape.push_back(b);
             this->mShape.push_back(c);
         }
+        Tensor(int a, int b, int c, int d)
+        {
+            mData.resize(a * b * c * d);
+            this->mShape.push_back(a);
+            this->mShape.push_back(b);
+            this->mShape.push_back(c);
+            this->mShape.push_back(d);
+        }
 
         Tensor &operator=(Tensor<dtype> &tensor)
         {

@@ -113,51 +113,41 @@ namespace sv
 
         std::string str() const
         {
+            if (mShape.size() == 4)
+                return strND(4);
             if (mShape.size() == 3)
-                return str3D();
+                return strND(3);
             if (mShape.size() == 2)
-                return str2D();
-            return str1D();
+                return strND(2);
+            return strND(1);
         }
 
-        std::string str1D() const
+        std::string strND(int N) const
         {
             std::stringstream ss;
             for (int i = 0; i < mData.size(); i++)
             {
-                ss << mData[i] << " ";
-            }
-            return ss.str();
-        }
-
-        std::string str2D() const
-        {
-            std::stringstream ss;
-            for (int i = 0; i < mData.size(); i++)
-            {
-                if (i % mShape[0] == 0)
+                if (N == 4)
                 {
-                    ss << std::endl;
+                    if (i % (mShape[0] * mShape[1] * mShape[2]) == 0 && i != 0)
+                    {
+                        ss << std::endl;
+                    }
                 }
-                ss << mData[i] << " ";
-            }
-            return ss.str();
-        }
-
-        std::string str3D() const
-        {
-            std::stringstream ss;
-            for (int i = 0; i < mData.size(); i++)
-            {
-                if (i % (mShape[0] * mShape[1]) == 0 && i != 0)
+                if (N >= 3)
                 {
-                    ss << std::endl;
+                    if (i % (mShape[0] * mShape[1]) == 0 && i != 0)
+                    {
+                        ss << std::endl;
+                    }
                 }
-                if (i % mShape[0] == 0 && i != 0)
+                if (N >= 2)
                 {
-                    ss << std::endl;
+                    if (i % mShape[0] == 0 && i != 0)
+                    {
+                        ss << std::endl;
+                    }
                 }
-
                 ss << mData[i] << " ";
             }
             return ss.str();

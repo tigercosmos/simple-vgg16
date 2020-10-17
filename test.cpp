@@ -15,13 +15,13 @@ void testSimpleNet()
 
     auto network = sv::Network<double>();
 
-    auto *layer2 = new sv::ConvLayer<double>(3, 6); // 6 x 6 x 6
+    auto *layer2 = new sv::ConvLayer<double>(3, 3, 6); // 6 x 6 x 6
     network.addLayer(layer2);
 
-    auto *layer3 = new sv::MaxPoolLayer<double>(2, 2); // 3 x 3 x 3
+    auto *layer3 = new sv::MaxPoolLayer<double>(2, 2); // 3 x 3 x 6
     network.addLayer(layer3);
 
-    auto *layer4 = new sv::FCLayer<double>(27, 6); // 1 x 1 x 6
+    auto *layer4 = new sv::FCLayer<double>(3 * 3 * 6, 7); // 1 x 1 x 7
     network.addLayer(layer4);
 
     network.printLayers();
@@ -31,11 +31,11 @@ void testSimpleNet()
     std::cout << output << std::endl;
 }
 
-void testMaxPool()
+void testFC()
 {
     sv::Tensor<double> output;
 
-    std::cout << "Test MaxPool" << std::endl;
+    std::cout << "Test FC" << std::endl;
     auto t1 = sv::Tensor<double>(4, 4, 1);
     std::cout << "origin input" << std::endl;
     for (int i = 0; i < t1.data().size(); i++)
@@ -44,32 +44,8 @@ void testMaxPool()
     }
     std::cout << t1 << std::endl;
 
-    auto *layer = new sv::MaxPoolLayer<double>(2, 2);
+    auto *layer = new sv::FCLayer<double>(4 * 4 * 1, 2);
     layer->print();
-    layer->forward(t1, output);
-
-    std::cout << "@@ result @@" << std::endl;
-    std::cout << output << std::endl;
-}
-
-void testFC()
-{
-    sv::Tensor<double> output;
-
-    std::cout << "Test ConvPool" << std::endl;
-    auto t1 = sv::Tensor<double>(10, 10, 1);
-    std::cout << "origin input" << std::endl;
-    for (int i = 3; i < 6; i++)
-    {
-        for (int j = 3; j < 6; j++)
-        {
-            t1.data()[i * 10 + j] = 1;
-        }
-    }
-    std::cout << t1 << std::endl;
-
-    auto *layer = new sv::FCLayer<double>(10 * 10 * 1, 7);
-    // layer->print();
     layer->forward(t1, output);
 
     std::cout << "@@ result @@" << std::endl;
@@ -80,7 +56,31 @@ void testConv()
 {
     sv::Tensor<double> output;
 
-    std::cout << "Test FC" << std::endl;
+    std::cout << "Test Conv" << std::endl;
+    auto t1 = sv::Tensor<double>(5, 5, 1); // 5 x 5 x 1
+    std::cout << "origin input" << std::endl;
+    for (int i = 2; i < 4; i++)
+    {
+        for (int j = 2; j < 4; j++)
+        {
+            t1[i * 5 + j] = 1;
+        }
+    }
+    std::cout << t1 << std::endl;
+
+    auto *layer = new sv::ConvLayer<double>(1, 3, 2); // 5 x 5 x 2
+    layer->print();
+    layer->forward(t1, output);
+
+    std::cout << "@@ result @@" << std::endl;
+    std::cout << output << std::endl;
+}
+
+void testMaxPool()
+{
+    sv::Tensor<double> output;
+
+    std::cout << "Test MaxPool" << std::endl;
     auto t1 = sv::Tensor<double>(4, 4, 1);
     std::cout << "origin input" << std::endl;
     for (int i = 0; i < t1.data().size(); i++)

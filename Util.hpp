@@ -10,13 +10,13 @@ constexpr bool is_floating_point = std::is_floating_point<T>::value;
 
 namespace sv
 {
-    int to1D(int z, int y, int x, int ySize, int zSize)
+    int to1D(int z, int y, int x, int xSize, int ySize)
     {
-        return (ySize * zSize * z) + (ySize * y) + x;
+        return (ySize * xSize * z) + (xSize * y) + x;
     }
 
-    int to1D(int f, int z, int y, int x, int ySize, int zSize, int fSize)
+    int to1D(int f, int z, int y, int x, int xSize, int ySize, int zSize)
     {
-        return (ySize * zSize * fSize * f) + (ySize * zSize * z) + (ySize * y) + x;
+        return (ySize * zSize * xSize * f) + (ySize * xSize * z) + (xSize * y) + x;
     }
 } // namespace sv

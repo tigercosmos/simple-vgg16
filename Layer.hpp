@@ -35,9 +35,9 @@ namespace sv
     {
     private:
         std::string name = "Conv";
+        int fmapSize;
         int kernelSize;
         int channelSize;
-        sv::Tensor<dtype> fmapSize;
         sv::Tensor<dtype> weight;
         sv::Tensor<dtype> bias;
 
@@ -46,8 +46,8 @@ namespace sv
             : fmapSize{fmapSize}, kernelSize{kernelSize}, channelSize{channelSize}
         {
             STATIC_ASSERT_FLOAT_TYPE(dtype);
-            kernels = sv::Tensor<dtype>(fmapSize, kernelSize, kernelSize, channelSize);
-            kernels.randam();
+            weight = sv::Tensor<dtype>(kernelSize, kernelSize, fmapSize, channelSize);
+            weight.randam();
             bias = sv::Tensor<dtype>(channelSize);
             bias.randam();
         }

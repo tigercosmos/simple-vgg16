@@ -14,4 +14,9 @@ namespace sv
     {
         return (width * height * z) + (width * y) + x;
     }
+
+    int to1D(int f, int z, int y, int x, int width, int height, int fsize)
+    {
+        return (width * height * fsize * f) + (width * height * z) + (width * y) + x;
+    }
 } // namespace sv

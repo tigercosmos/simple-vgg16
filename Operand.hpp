@@ -10,7 +10,7 @@ namespace sv
 {
     template <typename dtype>
     void conv2d(sv::Tensor<dtype> &input, sv::Tensor<dtype> &output,
-                sv::Tensor<dtype> const &kernels, sv::Tensor<dtype> const &bias)
+                sv::Tensor<dtype> const &weight, sv::Tensor<dtype> const &bias)
     {
 #ifdef BENCHMARK
         MEM = 0;
@@ -19,48 +19,59 @@ namespace sv
 #endif
 
         auto inputShape = input.shape();
-        auto kernelsShape = kernels.shape();
+        int i_w = inputShape[0];
+        int i_h = inputShape[1];
+        int i_f = inputShape[2]; // fmap
+        auto weightShape = weight.shape();
+        int w_w = weightShape[0];
+        int w_h = weightShape[1];
+        int w_f = weightShape[2]; // fmap
+        int w_c = weightShape[3]; // channel
 
-        int outSize = inputShape[0] - kernelsShape[0] + 1;
-        output = sv::Tensor<dtype>(outSize, outSize, kernelsShape[2]);
+        int outSize = i_w - w_w + 1;
+        output = sv::Tensor<dtype>(outSize, outSize, w_c);
         auto outputShape = output.shape();
+        int o_w = outputShape[0];
+        int o_h = outputShape[1];
+        int o_c = outputShape[2];
 
         assert(outputShape.size() == 3);
-        assert(kernelsShape.size() == 3);
+        assert(weightShape.size() == 4);
 
-        int n, x, y, i, j, k;
-        int R = inputShape[2], S = kernelsShape[0], C = kernelsShape[1],
-            N = outputShape[2], F = outputShape[0], E = outputShape[1];
+        int n, m, x, y, i, j, k;
 
-        for (n = 0; n < N; n++)
+        for (m = 0; m < w_f; m++) // kernel fmap
         {
-            for (x = 0; x < F; x++)
+            for (n = 0; n < o_c; n++) // kernel channel
             {
-                for (y = 0; y < E; y++)
+                for (x = 0; x < o_w; x++) //  output x
                 {
-                    dtype sum = 0;
-                    for (k = 0; k < R; k++)
+                    for (y = 0; y < o_h; y++) // output y
                     {
-                        for (i = 0; i < S; i++)
+                        dtype sum = 0;
+                        for (k = 0; k < o_c; k++) // output channel
                         {
-                            for (j = 0; j < C; j++)
+                            for (i = 0; i < w_w; i++) // kernel x
                             {
-                                dtype inputWeight = input[sv::to1D(k, (y + j), (x + i), F, E)];
-                                dtype kernelWeight = kernels[sv::to1D(n, j, i, S, C)];
-                                sum += inputWeight * kernelWeight;
+                                for (j = 0; j < w_h; j++) // kernel y
+                                {
+                                    dtype inputWeight = input[sv::to1D(k, (y + j), (x + i), o_w, o_h)];
+                                    dtype kernelWeight = weight[sv::to1D(m, n, j, i, w_w, w_h, w_f)];
+                                    sum += inputWeight * kernelWeight;
+                                }
                             }
                         }
-                    }
 
-                    sum += bias[n];
-                    output[sv::to1D(n, y, x, F, E)] = sv::ReLU(sum);
+                        sum += bias[n];
+                        output[sv::to1D(n, y, x, o_w, o_h)] = sv::ReLU(sum);
+                    }
                 }
             }
         }
 
 #ifdef BENCHMARK
-        MAC = N * F * E * R * S * C;
-        PARAM = kernels.data().size() + bias.data().size();
+        MAC = w_c * w_f * w_h * w_w * o_c * o_w * o_h;
+        PARAM = weight.data().size() + bias.data().size();
         MEM = output.data().size() * sizeof(dtype);
 #endif
     }

@@ -35,15 +35,11 @@ namespace sv
     {
     private:
         std::string name = "Conv";
-        int fmapSize;
-        int kernelSize;
-        int channelSize;
         sv::Tensor<dtype> weight;
         sv::Tensor<dtype> bias;
 
     public:
-        ConvLayer(int fmapSize, int kernelSize, int channelSize)
-            : fmapSize{fmapSize}, kernelSize{kernelSize}, channelSize{channelSize}
+        ConvLayer(int outputSize, int fmapSize, int kernelSize, int channelSize)
         {
             STATIC_ASSERT_FLOAT_TYPE(dtype);
             weight = sv::Tensor<dtype>(kernelSize, kernelSize, fmapSize, channelSize);
@@ -85,17 +81,16 @@ namespace sv
 
             sv::Tensor<dtype> newTensor(x + 2, y + 2, z);
             auto newShape = newTensor.shape();
-            int width = newShape[0], height = newShape[1];
 
-            for (int i = 0; i < z; i++)
+            for (int k = 0; k < z; k++)
             {
-                for (int k = 0; k < y; k++)
+                for (int j = 0; j < y; j++)
                 {
-                    for (int j = 0; j < x; j++)
+                    for (int i = 0; i < x; i++)
                     {
 
-                        int newId = sv::to1D(i, k + 1, j + 1, width, height);
-                        int oldId = sv::to1D(i, k, j, x, y);
+                        int newId = sv::to1D(k, j + 1, i + 1, y + 2, z);
+                        int oldId = sv::to1D(k, j, i, y, z);
                         newTensor[newId] = input[oldId];
                     }
                 }

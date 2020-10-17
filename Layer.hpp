@@ -39,7 +39,7 @@ namespace sv
         sv::Tensor<dtype> bias;
 
     public:
-        ConvLayer(int outputSize, int fmapSize, int kernelSize, int channelSize)
+        ConvLayer(int fmapSize, int kernelSize, int channelSize)
         {
             STATIC_ASSERT_FLOAT_TYPE(dtype);
             weight = sv::Tensor<dtype>(kernelSize, kernelSize, fmapSize, channelSize);
@@ -88,9 +88,8 @@ namespace sv
                 {
                     for (int i = 0; i < x; i++)
                     {
-
-                        int newId = sv::to1D(k, j + 1, i + 1, y + 2, z);
-                        int oldId = sv::to1D(k, j, i, y, z);
+                        int newId = sv::to1D(k, j + 1, i + 1, x + 2, y);
+                        int oldId = sv::to1D(k, j, i, x, y);
                         newTensor[newId] = input[oldId];
                     }
                 }

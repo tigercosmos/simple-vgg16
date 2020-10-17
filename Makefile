@@ -1,5 +1,5 @@
 CXX=clang++
-CXXFLAGS=-Iobjs/ -O3 -std=c++17 -Wall -g
+CXXFLAGS=-Iobjs/ -O3 -std=c++17 -Wall -fopenmp 
 
 APP_NAME=vgg16
 TEST_NAME=vgg16_test

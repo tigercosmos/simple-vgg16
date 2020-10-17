@@ -25,37 +25,37 @@ int main()
     auto network = sv::Network<double>();
 
     // add layers into the network
-    auto *layer1_1 = new sv::ConvLayer<double>(3, 64); //224 x 224 x 64
+    auto *layer1_1 = new sv::ConvLayer<double>(3, 3, 64); //224 x 224 x 64
     network.addLayer(layer1_1);
-    auto *layer1_2 = new sv::ConvLayer<double>(3, 64); //224 x 224 x 64
+    auto *layer1_2 = new sv::ConvLayer<double>(64, 3, 64); //224 x 224 x 64
     network.addLayer(layer1_2);
     auto *layer1_3 = new sv::MaxPoolLayer<double>(2, 2); // 112 x 112 x 64
     network.addLayer(layer1_3);
 
-    auto *layer2_1 = new sv::ConvLayer<double>(3, 128); // 112 x 112 x 128
+    auto *layer2_1 = new sv::ConvLayer<double>(64, 3, 128); // 112 x 112 x 128
     network.addLayer(layer2_1);
-    auto *layer2_2 = new sv::ConvLayer<double>(3, 128); // 112 x 112 x 128
+    auto *layer2_2 = new sv::ConvLayer<double>(128, 3, 128); // 112 x 112 x 128
     network.addLayer(layer2_2);
-    auto *layer2_3 = new sv::MaxPoolLayer<double>(2, 2); // 56 x 56 x 64
+    auto *layer2_3 = new sv::MaxPoolLayer<double>(2, 2); // 56 x 56 x 128
     network.addLayer(layer2_3);
 
-    auto *layer3_1 = new sv::ConvLayer<double>(3, 256); // 56 x 56 x 256
+    auto *layer3_1 = new sv::ConvLayer<double>(128, 3, 256); // 56 x 56 x 256
     network.addLayer(layer3_1);
-    auto *layer3_2 = new sv::ConvLayer<double>(3, 256); // 56 x 56 x 256
+    auto *layer3_2 = new sv::ConvLayer<double>(256, 3, 256); // 56 x 56 x 256
     network.addLayer(layer3_2);
     auto *layer3_3 = new sv::MaxPoolLayer<double>(2, 2); // 28 x 28 x 256
     network.addLayer(layer3_3);
 
-    auto *layer4_1 = new sv::ConvLayer<double>(3, 512); // 28 x 28 x 512
+    auto *layer4_1 = new sv::ConvLayer<double>(256, 3, 512); // 28 x 28 x 512
     network.addLayer(layer4_1);
-    auto *layer4_2 = new sv::ConvLayer<double>(3, 512); // 28 x 28 x 512
+    auto *layer4_2 = new sv::ConvLayer<double>(512, 3, 512); // 28 x 28 x 512
     network.addLayer(layer4_2);
     auto *layer4_3 = new sv::MaxPoolLayer<double>(2, 2); // 14 x 14 x 512
     network.addLayer(layer4_3);
 
-    auto *layer5_1 = new sv::ConvLayer<double>(3, 512); // 14 x 14 x 512
+    auto *layer5_1 = new sv::ConvLayer<double>(512, 3, 512); // 14 x 14 x 512
     network.addLayer(layer5_1);
-    auto *layer5_2 = new sv::ConvLayer<double>(3, 512); // 14 x 14 x 512
+    auto *layer5_2 = new sv::ConvLayer<double>(512, 3, 512); // 14 x 14 x 512
     network.addLayer(layer5_2);
     auto *layer5_3 = new sv::MaxPoolLayer<double>(2, 2); // 7 x 7 x 512
     network.addLayer(layer5_3);
@@ -73,7 +73,7 @@ int main()
 
 #ifdef BENCHMARK
     std::cout << "Total:\t" << MEMALL / 1000000 << "Mb,\t"
-              << PARAMALL / 1000000 << "Mb,\t" << MACALL / 1000000 << "Mb" << std::endl;
+              << PARAMALL / 1000000 << "M,\t" << MACALL / 1000000 << "M" << std::endl;
     std::cout << "-----------------------------" << std::endl;
 #endif
 

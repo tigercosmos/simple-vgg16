@@ -1,6 +1,8 @@
 #pragma once
 #include <cassert>
 #include "Activation.hpp"
+#include <omp.h>
+#include <limits>
 
 #ifdef BENCHMARK
 extern long long int MEM, PARAM, MAC;
@@ -17,60 +19,62 @@ namespace sv
         PARAM = 0;
         MAC = 0;
 #endif
-
         auto inputShape = input.shape();
         int i_w = inputShape[0];
-        // int i_h = inputShape[1];
-        // int i_f = inputShape[2]; // fmap
+        int i_h = inputShape[1];
+        int i_f = inputShape[2]; // fmap
         auto weightShape = weight.shape();
         int w_w = weightShape[0];
         int w_h = weightShape[1];
         int w_f = weightShape[2]; // fmap
         int w_c = weightShape[3]; // channel
 
-        int outSize = i_w - w_w + 1;
-        output = sv::Tensor<dtype>(outSize, outSize, w_c);
+        int o_w = i_w - w_w + 1;
+        int o_h = i_h - w_h + 1;
+        int o_c = w_c;
+        output = sv::Tensor<dtype>(o_w, o_h, o_c);
         auto outputShape = output.shape();
-        int o_w = outputShape[0];
-        int o_h = outputShape[1];
-        int o_c = outputShape[2];
 
         assert(outputShape.size() == 3);
         assert(weightShape.size() == 4);
+        assert(i_f == w_f);
+        assert(o_c == bias.shape()[0]);
 
-        int n, m, x, y, i, j, k;
+        int n, m, x, y, i, j;
 
-        for (m = 0; m < w_f; m++) // kernel fmap
+#pragma omp parallel for collapse(3)
+        for (n = 0; n < o_c; n++) // output channel
         {
-            for (n = 0; n < o_c; n++) // kernel channel
+            for (y = 0; y < o_h; y++) // output y
             {
-                for (x = 0; x < o_w; x++) //  output x
+                for (x = 0; x < o_w; x++) // output x
                 {
-                    for (y = 0; y < o_h; y++) // output y
+                    dtype sum = 0;
+#pragma omp parallel for collapse(3)
+                    for (m = 0; m < w_f; m++) // kernel fmap
                     {
-                        dtype sum = 0;
-                        for (k = 0; k < o_c; k++) // output channel
+                        for (j = 0; j < w_h; j++) // kernel y
                         {
                             for (i = 0; i < w_w; i++) // kernel x
                             {
-                                for (j = 0; j < w_h; j++) // kernel y
-                                {
-                                    dtype inputWeight = input[sv::to1D(k, (y + j), (x + i), o_w, o_h)];
-                                    dtype kernelWeight = weight[sv::to1D(m, n, j, i, w_w, w_h, w_f)];
-                                    sum += inputWeight * kernelWeight;
-                                }
+                                dtype inputWeight = input[sv::to1D(m, (y + j), (x + i), i_w, i_h)];
+                                dtype kernelWeight = weight[sv::to1D(n, m, j, i, w_w, w_h, w_f)];
+#pragma omp atomic
+                                sum += inputWeight * kernelWeight;
                             }
                         }
-
+                    }
+#pragma omp critical
+                    {
                         sum += bias[n];
-                        output[sv::to1D(n, y, x, o_w, o_h)] = sv::ReLU(sum);
+                        output[sv::to1D(n, y, x, o_w, o_h)] += sv::ReLU(sum);
                     }
                 }
             }
         }
 
 #ifdef BENCHMARK
-        MAC = w_c * w_f * w_h * w_w * o_c * o_w * o_h;
+        MAC = w_f * w_h * w_w * o_c * o_w * o_h;
         PARAM = weight.data().size() + bias.data().size();
         MEM = output.data().size() * sizeof(dtype);
 #endif
@@ -93,22 +97,23 @@ namespace sv
         int outSize = (height - poolSize) / stride + 1;
         sv::Tensor<dtype> out(outSize, outSize, inputShape[2]);
 
-        int n, x, y, i, j, u, v, idx = 0;
-        dtype max;
+        int n, x, y, i, j, idx = 0;
+
+#pragma omp parallel for collapse(3)
         for (n = 0; n < inputShape[2]; n++)
         {
-            for (y = 0, v = 0; y < height; y += stride)
+            for (y = 0; y < height; y += stride)
             {
-                for (x = 0, u = 0; x < width; x += stride)
+                for (x = 0; x < width; x += stride)
                 {
-                    max = -100000000000;
-
+                    dtype max = std::numeric_limits<dtype>::min();
                     for (i = 0; i < poolSize; i++)
                     {
                         for (j = 0; j < poolSize; j++)
                         {
                             if (input[sv::to1D(n, (y + j), (x + i), width, height)] > max)
                             {
+
                                 max = input[sv::to1D(n, (y + j), (x + i), width, height)];
                             }
                         }
@@ -145,6 +150,7 @@ namespace sv
         int outputSize = weightShape[1];
         output = sv::Tensor<dtype>(outputSize);
 
+#pragma omp parallel for
         for (int i = 0; i < outputSize; i++)
         {
             output[i] = bias[i];

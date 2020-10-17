@@ -57,18 +57,12 @@ void testConv()
     sv::Tensor<double> output;
 
     std::cout << "Test Conv" << std::endl;
-    auto t1 = sv::Tensor<double>(5, 5, 1); // 5 x 5 x 1
+    auto t1 = sv::Tensor<double>(3, 3, 2); // 5 x 5 x 2
     std::cout << "origin input" << std::endl;
-    for (int i = 2; i < 4; i++)
-    {
-        for (int j = 2; j < 4; j++)
-        {
-            t1[i * 5 + j] = 1;
-        }
-    }
+    t1.randam();
     std::cout << t1 << std::endl;
 
-    auto *layer = new sv::ConvLayer<double>(1, 3, 2); // 5 x 5 x 2
+    auto *layer = new sv::ConvLayer<double>(2, 3, 2); // 5 x 5 x 2
     layer->print();
     layer->forward(t1, output);
 

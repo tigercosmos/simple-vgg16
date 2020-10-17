@@ -20,8 +20,8 @@ namespace sv
 
         auto inputShape = input.shape();
         int i_w = inputShape[0];
-        int i_h = inputShape[1];
-        int i_f = inputShape[2]; // fmap
+        // int i_h = inputShape[1];
+        // int i_f = inputShape[2]; // fmap
         auto weightShape = weight.shape();
         int w_w = weightShape[0];
         int w_h = weightShape[1];
